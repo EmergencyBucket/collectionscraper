@@ -15,7 +15,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let client = reqwest::Client::builder().local_address(addr).build()?;
 
-    let res = client.get("ip.sb").send().await?.text().await?;
+    let res = client.get("https://api.ipify.org?format=text").send().await?.text().await?;
     println!("{res:#?}");
 
     Ok(())
