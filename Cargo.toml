@@ -9,5 +9,5 @@ async-std = "1.13.0"
 futures = "0.3.31"
 gjson = "0.8.1"
 rand = "0.9.0"
-reqwest = { version = "0.12.12", features = ["json"]}
+reqwest = { version = "0.12.12", features = ["json", "http2", "http3"]}
 tokio = { version = "1", features = ["full"] }
