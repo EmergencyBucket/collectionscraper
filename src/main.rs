@@ -13,9 +13,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         rand::random::<u16>(),
     ]);
 
-    let client = reqwest::Client::builder().proxy(reqwest::Proxy::all("http://0.0.0.0:51080")?).build()?;
+    let client = reqwest::Client::builder().local_address(addr).build()?;
 
-    let res = client.get("https://api.ipify.org?format=text").send().await?.text().await?;
+    let res = client.get("https://api64.ipify.org?format=text").send().await?.text().await?;
     println!("{res:#?}");
 
     Ok(())
