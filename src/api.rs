@@ -29,7 +29,11 @@ pub async fn make_request(url: &str) -> String {
 }
 
 pub async fn make_bungie_request(path: &str) -> String {
-    let url = format!("https://www.bungie.net/Platform{}", path);
+    let url = format!(
+        "https://www.bungie.net/Platform{}?random={}",
+        path,
+        rand::random::<u32>()
+    );
     let addr = generate_address();
 
     let client = reqwest::Client::builder()
