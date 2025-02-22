@@ -13,7 +13,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         rand::random::<u16>(),
     ]);
 
-    let client = reqwest::Client::builder().local_address(addr).build()?;
+    let client = reqwest::Client::builder().http1_only().local_address(addr).build()?;
 
     let res = client.get("http://ipv6.ip.sb").send().await?.text().await?;
     println!("{res:#?}");
