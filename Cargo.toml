@@ -4,5 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+amqprs = "2.1.0"
+gjson = "0.8.1"
 reqwest = { version = "0.12.12", features = ["json"]}
 tokio = { version = "1", features = ["full"] }

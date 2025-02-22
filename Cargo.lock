@@ -18,6 +18,42 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "512761e0bb2578dd7380c6baaa0f4ce03e84f95e960231d1dec8bf4d7d6e2627"
 
 [[package]]
+name = "amqp_serde"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "787581044ca08ad61cdb3a4e21afba087fb8cdba3bb3e23ce69a7d091808014d"
+dependencies = [
+ "bytes",
+ "serde",
+ "serde_bytes_ng",
+]
+
+[[package]]
+name = "amqprs"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5e93684f1ae3c63429509ce3bf8a587bffc414f71a13810ed3e5f2c8757888b0"
+dependencies = [
+ "amqp_serde",
+ "async-trait",
+ "bytes",
+ "serde",
+ "serde_bytes",
+ "tokio",
+]
+
+[[package]]
+name = "async-trait"
+version = "0.1.86"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "644dd749086bf3771a2fbc5f256fdb982d53f011c7d5d560304eafeecebce79d"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "atomic-waker"
 version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -87,6 +123,8 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 name = "collectionscraper"
 version = "0.1.0"
 dependencies = [
+ "amqprs",
+ "gjson",
  "reqwest",
  "tokio",
 ]
@@ -246,6 +284,12 @@ name = "gimli"
 version = "0.31.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "07e28edb80900c19c28f1072f2e8aeca7fa06b23cd4169cefe1af5aa3260783f"
+
+[[package]]
+name = "gjson"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "43503cc176394dd30a6525f5f36e838339b8b5619be33ed9a7783841580a97b6"
 
 [[package]]
 name = "h2"
@@ -944,6 +988,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e8dfc9d19bdbf6d17e22319da49161d5d0108e4188e8b680aef6299eed22df60"
 dependencies = [
  "serde_derive",
+]
+
+[[package]]
+name = "serde_bytes"
+version = "0.11.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "387cc504cb06bb40a96c8e04e951fe01854cf6bc921053c954e4a606d9675c6a"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "serde_bytes_ng"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bdb0ebce8684e2253f964e8b6ce51f0ccc6666bbb448fb4a6788088bda6544b6"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
