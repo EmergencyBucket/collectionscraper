@@ -1,3 +1,5 @@
+use reqwest::Url;
+
 /// No changes can be made with this API key so it can be public
 const BUNGIE_KEY: &'static str = "529cac5f9e3a482b86b931f1f75f2331";
 
@@ -29,11 +31,12 @@ pub async fn make_request(url: &str) -> String {
 }
 
 pub async fn make_bungie_request(path: &str) -> String {
-    let url = format!(
-        "https://www.bungie.net/Platform{}?random={}",
-        path,
-        rand::random::<u32>()
-    );
+    let url = Url::parse_with_params(
+        format!("https://www.bungie.net/Platform{}", path).as_str(),
+        &[("random", rand::random::<u32>().to_string())],
+    )
+    .unwrap();
+
     let addr = generate_address();
 
     let client = reqwest::Client::builder()
@@ -42,7 +45,7 @@ pub async fn make_bungie_request(path: &str) -> String {
         .unwrap();
 
     let res = client
-        .get(&url)
+        .get(url)
         .header("X-API-Key", BUNGIE_KEY)
         .send()
         .await
