@@ -6,7 +6,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>  {
 
     let client = reqwest::Client::builder().proxy(proxy).build()?;
 
-    let res = client.get("http://httpbin.org/ip").send()
+    let res = client.get("http://ipv6.ip.sb").send()
         .await?
         .json::<HashMap<String, String>>()
         .await?;
