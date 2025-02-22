@@ -41,6 +41,7 @@ pub async fn make_bungie_request(path: &str) -> String {
 
     let client = reqwest::Client::builder()
         .local_address(addr)
+        .http3_prior_knowledge()
         .build()
         .unwrap();
 
