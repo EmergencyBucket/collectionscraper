@@ -81,7 +81,7 @@ pub async fn make_bungie_request(path: &str) -> String {
         .unwrap();
 
     if res.len() < 10000 {
-        println!("{}", res);
+        println!("Sent req from {} and got {}", addr.to_string(), res);
     }
 
     res
