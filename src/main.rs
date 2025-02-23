@@ -14,8 +14,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut reqs = vec![];
 
-    for _ in 0..100 {
-        reqs.push(make_bungie_request("/Destiny2/3/Profile/4611686018484406952/?components=800"));
+    for i in 0..100 {
+        if(i%2==1) {
+            reqs.push(make_bungie_request("/Destiny2/3/Profile/4611686018484406952/?components=800"));
+        }
+        else {
+            reqs.push(make_bungie_request("/Destiny2/1/Profile/4611686018473519476/?components=800"));
+        }
     }
 
     let c = trpl::join_all(reqs).await;
