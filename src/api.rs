@@ -80,7 +80,7 @@ pub async fn make_bungie_request(path: &str) -> String {
         .await
         .unwrap();
 
-    if res.len() < 1000 {
+    if res.len() < 10000 {
         println!("{}", res);
     }
 
