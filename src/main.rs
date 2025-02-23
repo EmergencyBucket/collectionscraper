@@ -15,11 +15,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut reqs = vec![];
 
     for i in 0..100 {
-        if(i%2==1) {
+        if(i%3==2) {
             reqs.push(make_bungie_request("/Destiny2/3/Profile/4611686018484406952/?components=800"));
         }
-        else {
+        else if i%3==1 {
             reqs.push(make_bungie_request("/Destiny2/1/Profile/4611686018473519476/?components=800"));
+        }
+        else {
+            reqs.push(make_bungie_request("/Destiny2/1/Profile/4611686018429558133/?components=800"));
         }
     }
 
