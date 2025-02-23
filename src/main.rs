@@ -24,10 +24,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "{}",
         gjson::get(&c.0, "Response.profileCollectibles.data.collectibles")
     );
-    println!(
-        "{}",
-        gjson::get(&c.1, "Response.profileCollectibles.data.collectibles")
-    );
 
     let now = SystemTime::now();
 
