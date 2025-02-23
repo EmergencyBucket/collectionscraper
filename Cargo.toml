@@ -6,8 +6,13 @@ edition = "2024"
 [dependencies]
 amqprs = "2.1.0"
 async-std = "1.13.0"
+clickhouse = "0.13.1"
+dotenv = "0.15.0"
 futures = "0.3.31"
 gjson = "0.8.1"
+nestify = "0.3.3"
 rand = "0.9.0"
 reqwest = { version = "0.12.12", features = ["json", "http2", "http3"]}
+serde = "1.0.218"
 tokio = { version = "1", features = ["full"] }
+trpl = "0.2.0"

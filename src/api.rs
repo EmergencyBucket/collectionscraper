@@ -1,4 +1,8 @@
+use std::collections::HashMap;
+use serde::{Deserialize, Serialize};
+
 use reqwest::Url;
+use nestify::nest;
 
 /// No changes can be made with this API key so it can be public
 const BUNGIE_KEY: &'static str = "529cac5f9e3a482b86b931f1f75f2331";
@@ -30,7 +34,22 @@ pub async fn make_request(url: &str) -> String {
     res
 }
 
-pub async fn make_bungie_request(path: &str) -> String {
+nest! {
+    #[derive(Serialize, Deserialize, Debug)]*
+    pub struct BungieResponse {
+        pub Response: pub struct Response {
+            pub profileCollectibles: pub struct ProfileCollectibles {
+                pub data: pub struct Data {
+                    pub collectibles: HashMap<u32, pub struct Collectible {
+                        pub state: u8
+                    }>
+                }
+            }
+        }
+    }
+}
+
+pub async fn make_bungie_request(path: &str) -> BungieResponse {
     let url = Url::parse_with_params(
         format!("https://www.bungie.net/Platform{}", path).as_str(),
         &[("random", rand::random::<u32>().to_string())],
@@ -39,10 +58,15 @@ pub async fn make_bungie_request(path: &str) -> String {
 
     let addr = generate_address();
 
-    let client = reqwest::Client::builder()
-        .local_address(addr)
+    let mut client_builder = reqwest::Client::builder()
         .danger_accept_invalid_certs(true)
-        .http3_prior_knowledge()
+        .http3_prior_knowledge();
+
+    if std::env::var("ENVIRONMENT").unwrap_or("production".to_owned()) != "development" {
+        client_builder = client_builder.local_address(addr);
+    }
+
+    let client = client_builder
         .build()
         .unwrap();
 
@@ -52,8 +76,17 @@ pub async fn make_bungie_request(path: &str) -> String {
         .send()
         .await
         .unwrap()
-        .text()
+        .json::<BungieResponse>()
         .await
         .unwrap();
     res
+}
+
+pub async fn get_collections(membership_type: u8, membership_id: u64) {
+    let req = make_bungie_request(&format!(
+        "/Destiny2/{}/Profile/{}/?components=800",
+        membership_type, membership_id
+    )).await;
+
+    //gjson::get(&req, "Response.profileCollectibles.data.collectibles");
 }
