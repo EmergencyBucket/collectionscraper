@@ -11,8 +11,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let c = join!(a, b);
 
-    println!("{}", c.0);
-    println!("{}", c.1);
+    println!(
+        "{}",
+        gjson::get(&c.0, "Response.profileCollectibles.data.collectibles")
+    );
+    println!(
+        "{}",
+        gjson::get(&c.1, "Response.profileCollectibles.data.collectibles")
+    );
 
     Ok(())
 }
