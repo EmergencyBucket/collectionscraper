@@ -24,7 +24,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Finished requests at {:?}", startparse);
 
-    println!("{:?}", c[0].Response.profileCollectibles.data.collectibles.len());
+    //println!("{:?}", c[0].Response.profileCollectibles.data.collectibles.len());
 
     let now = SystemTime::now();
 

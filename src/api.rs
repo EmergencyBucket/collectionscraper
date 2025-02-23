@@ -49,7 +49,7 @@ nest! {
     }
 }
 
-pub async fn make_bungie_request(path: &str) -> BungieResponse {
+pub async fn make_bungie_request(path: &str) -> String {
     let url = Url::parse_with_params(
         format!("https://www.bungie.net/Platform{}", path).as_str(),
         &[("random", rand::random::<u32>().to_string())],
@@ -76,9 +76,14 @@ pub async fn make_bungie_request(path: &str) -> BungieResponse {
         .send()
         .await
         .unwrap()
-        .json::<BungieResponse>()
+        .text()
         .await
         .unwrap();
+
+    if res.len() < 1000 {
+        println!("{}", res);
+    }
+
     res
 }
 
