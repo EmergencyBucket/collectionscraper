@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
-use reqwest::Url;
+use reqwest::{Response, Url};
 use nestify::nest;
 
 /// No changes can be made with this API key so it can be public
@@ -34,22 +34,7 @@ pub async fn make_request(url: &str) -> String {
     res
 }
 
-nest! {
-    #[derive(Serialize, Deserialize, Debug)]*
-    pub struct BungieResponse {
-        pub Response: pub struct Response {
-            pub profileCollectibles: pub struct ProfileCollectibles {
-                pub data: pub struct Data {
-                    pub collectibles: HashMap<u32, pub struct Collectible {
-                        pub state: u8
-                    }>
-                }
-            }
-        }
-    }
-}
-
-pub async fn make_bungie_request(path: &str) -> BungieResponse {
+pub async fn make_bungie_request(path: String) -> Response {
     let url = Url::parse_with_params(
         format!("https://www.bungie.net/Platform{}", path).as_str(),
         &[("random", rand::random::<u32>().to_string())],
@@ -75,19 +60,144 @@ pub async fn make_bungie_request(path: &str) -> BungieResponse {
         .header("X-API-Key", BUNGIE_KEY)
         .send()
         .await
-        .unwrap()
-        .json::<BungieResponse>()
-        .await
         .unwrap();
 
     res
 }
 
-pub async fn get_collections(membership_type: u8, membership_id: u64) {
-    let req = make_bungie_request(&format!(
-        "/Destiny2/{}/Profile/{}/?components=800",
-        membership_type, membership_id
-    )).await;
 
-    //gjson::get(&req, "Response.profileCollectibles.data.collectibles");
+
+pub async fn get_membership_type(membership_id: u64) -> u8 {
+    nest! {
+        #[derive(Serialize, Deserialize)]*
+        struct GetLinkedProfiles {
+            Response: Option<struct BungieResponse {
+                profiles: Vec<struct Profile {
+                    membershipType: u8
+                }>
+            }>
+        }
+    }
+
+    let req = make_bungie_request(format!("/Destiny2/-1/Profile/{}/LinkedProfiles/", membership_id));
+
+    let json: GetLinkedProfiles = req.await.json::<GetLinkedProfiles>().await.unwrap();
+
+    if json.Response.is_none() {
+        return 0;
+    }
+
+    json.Response.unwrap().profiles[0].membershipType
+}
+
+#[derive(PartialEq)]
+enum CollectibleState {
+    None,
+    NotAcquired,
+    Obscured,
+    Invisible,
+    CannotAffordMaterialRequirements,
+    InventorySpaceUnavailable,
+    UniquenessViolation,
+    PurchaseDisabled,
+}
+
+/// Decodes the collectible state from a u8  
+/// returns a vector of CollectibleState
+fn decode_state(state: u8) -> Vec<CollectibleState> {
+    const NONE: u8 = 0;
+    const NOT_ACQUIRED: u8 = 1;
+    const OBSCURED: u8 = 2;
+    const INVISIBLE: u8 = 4;
+    const CANNOT_AFFORD_MATERIAL_REQUIREMENTS: u8 = 8;
+    const INVENTORY_SPACE_UNAVAILABLE: u8 = 16;
+    const UNIQUENESS_VIOLATION: u8 = 32;
+    const PURCHASE_DISABLED: u8 = 64;
+
+    let mut states: Vec<CollectibleState> = vec![];
+
+    if state & NONE == NONE {
+        states.push(CollectibleState::None);
+    }
+
+    if state & NOT_ACQUIRED == NOT_ACQUIRED {
+        states.push(CollectibleState::NotAcquired);
+    }
+
+    if state & OBSCURED == OBSCURED {
+        states.push(CollectibleState::Obscured);
+    }
+
+    if state & INVISIBLE == INVISIBLE {
+        states.push(CollectibleState::Invisible);
+    }
+
+    if state & CANNOT_AFFORD_MATERIAL_REQUIREMENTS == CANNOT_AFFORD_MATERIAL_REQUIREMENTS {
+        states.push(CollectibleState::CannotAffordMaterialRequirements);
+    }
+
+    if state & INVENTORY_SPACE_UNAVAILABLE == INVENTORY_SPACE_UNAVAILABLE {
+        states.push(CollectibleState::InventorySpaceUnavailable);
+    }
+
+    if state & UNIQUENESS_VIOLATION == UNIQUENESS_VIOLATION {
+        states.push(CollectibleState::UniquenessViolation);
+    }
+
+    if state & PURCHASE_DISABLED == PURCHASE_DISABLED {
+        states.push(CollectibleState::PurchaseDisabled);
+    }
+
+    return states;
+}
+
+pub async fn get_collections(membership_id: u64) -> Vec<u32> {
+    let offset: u64 = 4611686018000000000;
+
+    let id = membership_id + offset;
+
+    // First we need to get the membershipType
+    let membership_type = get_membership_type(id).await;
+
+    if membership_type == 0 {
+        return vec![];
+    }
+
+    nest! {
+        #[derive(Serialize, Deserialize)]*
+        struct GetProfile {
+            Response: Option<struct Profile {
+                profileCollectibles: struct Collectibles {
+                    data: Option<struct CollectibleData {
+                        collectibles: HashMap<u32, struct Collectible {
+                            state: u8
+                        }>
+                    }>
+                }
+            }>
+        }
+    }
+
+    let req: GetProfile = make_bungie_request(format!(
+        "/Destiny2/{}/Profile/{}/?components=800",
+        membership_type, id
+    )).await.json::<GetProfile>().await.unwrap();
+
+    if req.Response.is_none() || req.Response.as_ref().unwrap().profileCollectibles.data.is_none() {
+        return vec![];
+    }
+
+    let collectibles = req.Response.unwrap().profileCollectibles.data.unwrap().collectibles;
+
+    let mut emblems: Vec<u32>  = vec![];
+
+    for (key, value) in collectibles {
+        let states = decode_state(value.state);
+
+        if !states.contains(&CollectibleState::NotAcquired) && states.len() > 0 {
+            emblems.push(key);
+        }
+    }
+
+    return emblems;
 }
