@@ -68,6 +68,8 @@ async fn process_message(message: String) {
         reqs.push(req);
     }
 
+    println!("Making {} requests": reqs.len()*2);
+
     let c = trpl::join_all(reqs).await;
 
     push_data(c).await;
