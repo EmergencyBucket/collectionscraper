@@ -42,7 +42,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             ConsumerMessage::Delivery(delivery) => {
                 let body = String::from_utf8_lossy(&delivery.body);
 
-                lv.push(serde_json::from_str(&body).unwrap());
+                let mut tem: Vec<u64> = serde_json::from_str(&body).unwrap();
+
+                lv.append(&mut tem);
 
                 if lv.len() >= 1000 {
                     process_message(lv).await;
