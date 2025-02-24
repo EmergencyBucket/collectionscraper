@@ -41,8 +41,7 @@ pub async fn make_bungie_request(path: String) -> Option<Response> {
         .danger_accept_invalid_hostnames(true)
         .pool_idle_timeout(Duration::from_secs(5))
         .http3_prior_knowledge()
-        .use_rustls_tls()
-        .connection_verbose(true);
+        .use_rustls_tls();
 
     if std::env::var("ENVIRONMENT").unwrap_or("production".to_owned()) != "development" {
         client_builder = client_builder.local_address(addr);
