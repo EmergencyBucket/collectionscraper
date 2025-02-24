@@ -39,8 +39,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         match message {
             ConsumerMessage::Delivery(delivery) => {
                 let body = String::from_utf8_lossy(&delivery.body);
-                //process_message(body.to_string()).await;
-                println!("(Received [{}]", body);
+                process_message(body.to_string()).await;
+                //println!("(Received [{}]", body);
                 consumer.ack(delivery).unwrap();
             }
             other => {
@@ -84,7 +84,7 @@ async fn process_message(message: String) {
 
     let c = trpl::join_all(reqs).await;
 
-    push_data(c).await;
+    //push_data(c).await;
 
     let end = SystemTime::now();
 
