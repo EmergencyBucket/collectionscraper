@@ -72,10 +72,12 @@ async fn process_message(message: String) {
 
     // Proccess in 100 request chunks
 
-    for i in 0..reqs.len()/100 {
+    for i in 0..reqs.len()/500 {
+        let start = SystemTime::now();
+        
         let mut temp = vec![];
 
-        for j in 0..100 {
+        for j in 0..500 {
             temp.push(reqs.remove(0));
         }
 
@@ -83,7 +85,9 @@ async fn process_message(message: String) {
 
         push_data(c).await;
 
-        println!("## Completed a 100 chunk");
+        let end = SystemTime::now();
+
+        println!("## Completed a 500 chunk in {:?}", end.duration_since(start).unwrap());
     }
 
     let end = SystemTime::now();
