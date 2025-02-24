@@ -41,7 +41,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         match message {
             ConsumerMessage::Delivery(delivery) => {
                 let body = String::from_utf8_lossy(&delivery.body);
-                process_message(test.to_string()).await;
+                process_message(body.to_string()).await;
                 //println!("(Received [{}]", body);
                 consumer.ack(delivery).unwrap();
             }
