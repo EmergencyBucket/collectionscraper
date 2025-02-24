@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, time::SystemTime};
+use std::{collections::HashMap, time::{Duration, SystemTime}};
 
 use nestify::nest;
 use reqwest::{Response, Url};
@@ -46,7 +46,7 @@ pub async fn make_bungie_request(path: String) -> Response {
     let addr = generate_address();
 
     let mut client_builder = reqwest::Client::builder()
-        .danger_accept_invalid_certs(true);
+        .timeout(Duration::from_secs(10));
 
     if std::env::var("ENVIRONMENT").unwrap_or("production".to_owned()) != "development" {
         client_builder = client_builder.local_address(addr);
@@ -99,6 +99,7 @@ pub async fn get_membership_details(membership_id: u64) -> (u8, String) {
     let data = &res.profiles.unwrap()[0];
 
     if data.membershipType.is_none() || data.displayName.is_none() {
+        println!("Strange error");
         return (0, "".to_owned());
     }
 
