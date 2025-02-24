@@ -407,6 +407,7 @@ dependencies = [
  "dotenv",
  "futures",
  "gjson",
+ "lazy_static",
  "nestify",
  "rand 0.9.0",
  "reqwest",

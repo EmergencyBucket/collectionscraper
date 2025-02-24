@@ -4,13 +4,25 @@ use std::{
     time::{Duration, SystemTime},
 };
 
+use lazy_static::lazy_static;
 use nestify::nest;
-use reqwest::{Response, Url};
+use reqwest::{Client, Response, Url};
 
 use crate::db::UsersRow;
 
 /// No changes can be made with this API key so it can be public
 const BUNGIE_KEY: &'static str = "529cac5f9e3a482b86b931f1f75f2331";
+
+lazy_static! {
+    pub static ref NETWORK_CLIENT: Client = reqwest::Client::builder()
+        .danger_accept_invalid_certs(true)
+        .danger_accept_invalid_hostnames(true)
+        .pool_idle_timeout(Duration::from_secs(5))
+        .http3_prior_knowledge()
+        .use_rustls_tls()
+        .build()
+        .unwrap();
+}
 
 /// Generates a random ipv6 address in the subnet  
 /// This subnet is specific to the eBucket server ```2a01:4f9:3051:4a65::/64```
@@ -34,6 +46,7 @@ pub async fn make_bungie_request(path: String) -> Option<Response> {
     )
     .unwrap();
 
+    /*
     let addr = generate_address();
 
     let mut client_builder = reqwest::Client::builder()
@@ -48,8 +61,13 @@ pub async fn make_bungie_request(path: String) -> Option<Response> {
     }
 
     let client = client_builder.build().unwrap();
+    */
 
-    let res = client.get(url).header("X-API-Key", BUNGIE_KEY).send().await;
+    let res = NETWORK_CLIENT
+        .get(url)
+        .header("X-API-Key", BUNGIE_KEY)
+        .send()
+        .await;
 
     if res.is_err() {
         return None;

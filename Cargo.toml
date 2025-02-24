@@ -10,6 +10,7 @@ clickhouse = { version = "0.13.1", features = ["inserter"] }
 dotenv = "0.15.0"
 futures = "0.3.31"
 gjson = "0.8.1"
+lazy_static = "1.5.0"
 nestify = "0.3.3"
 rand = "0.9.0"
 reqwest = { version = "0.12.12", features = ["json", "http2", "http3", "rustls-tls"] }
