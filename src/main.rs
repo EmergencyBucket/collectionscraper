@@ -1,4 +1,4 @@
-use std::time::SystemTime;
+use std::{time::SystemTime, vec};
 
 use amiquip::{AmqpValue, ConsumerMessage, ConsumerOptions, FieldTable, QueueDeclareOptions};
 use api::get_collections;
@@ -70,9 +70,21 @@ async fn process_message(message: String) {
 
     println!("Making {} requests", reqs.len()*2);
 
-    let c = trpl::join_all(reqs).await;
+    // Proccess in 100 request chunks
 
-    push_data(c).await;
+    for i in 0..reqs.len()/100 {
+        let mut temp = vec![];
+
+        for j in 0..100 {
+            temp.push(reqs.remove(0));
+        }
+
+        let c = trpl::join_all(temp).await;
+
+        push_data(c).await;
+
+        println!("## Completed a 100 chunk");
+    }
 
     let end = SystemTime::now();
 
