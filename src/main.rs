@@ -34,12 +34,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let receiver = consumer.receiver();
 
+    let mut lv: Vec<u64> = vec![];
+
     loop {
         let message = receiver.recv().unwrap();
         match message {
             ConsumerMessage::Delivery(delivery) => {
                 let body = String::from_utf8_lossy(&delivery.body);
-                process_message(body.to_string()).await;
+
+                lv.push(serde_json::from_str(&body).unwrap());
+
+                if lv.len() >= 1000 {
+                    process_message(lv).await;
+                    lv = vec![];
+                }
+
                 //println!("(Received [{}]", body);
                 consumer.ack(delivery).unwrap();
             }
@@ -55,21 +64,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-async fn process_message(message: String) {
+async fn process_message(ids: Vec<u64>) {
     let start = SystemTime::now();
-
-    let ids: Vec<u64> = serde_json::from_str(&message).unwrap();
 
     println!(
         "Getting ids starting at {} going to {}",
-        &ids[0],
-        &ids[ids.len() - 1]
+        ids[0],
+        ids[ids.len() - 1]
     );
 
     let mut reqs = vec![];
 
-    for i in &ids {
-        let req = get_collections(*i);
+    for i in ids {
+        let req = get_collections(i);
         reqs.push(req);
     }
 
