@@ -27,18 +27,6 @@ fn generate_address() -> std::net::IpAddr {
     ])
 }
 
-pub async fn make_request(url: &str) -> String {
-    let addr = generate_address();
-
-    let client = reqwest::Client::builder()
-        .local_address(addr)
-        .build()
-        .unwrap();
-
-    let res = client.get(url).send().await.unwrap().text().await.unwrap();
-    res
-}
-
 pub async fn make_bungie_request(path: String) -> Option<Response> {
     let url = Url::parse_with_params(
         format!("https://www.bungie.net/Platform{}", path).as_str(),
@@ -171,6 +159,20 @@ fn decode_state(state: u8) -> Vec<CollectibleState> {
 }
 
 pub async fn get_collections(membership_id: u64) -> UsersRow {
+    let default = UsersRow {
+        timestamp: SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as i64,
+        membershipId: 0,
+        membershipType: 0,
+        bungieName: "".to_string(),
+        lastPlayed: 0,
+        profileData: "".to_owned(),
+        collections: vec![],
+        emblems: vec![],
+    };
+
     let offset: u64 = 4611686018000000000;
 
     let id = membership_id + offset;
@@ -183,19 +185,7 @@ pub async fn get_collections(membership_id: u64) -> UsersRow {
     let name = membership_details.1;
 
     if membership_type == 0 {
-        return UsersRow {
-            timestamp: SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap()
-                .as_secs() as i64,
-            membershipId: id as i64,
-            membershipType: membership_type as i8,
-            bungieName: name,
-            lastPlayed: 0,
-            profileData: "".to_owned(),
-            collections: vec![],
-            emblems: vec![],
-        };
+        return default;
     }
 
     nest! {
@@ -220,72 +210,28 @@ pub async fn get_collections(membership_id: u64) -> UsersRow {
     .await;
 
     if ra.is_none() {
-        return UsersRow {
-            timestamp: SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap()
-                .as_secs() as i64,
-            membershipId: id as i64,
-            membershipType: membership_type as i8,
-            bungieName: name,
-            lastPlayed: 0,
-            profileData: "".to_owned(),
-            collections: vec![],
-            emblems: vec![],
-        };
+        return default;
     }
 
     let ja = ra.unwrap().json::<GetProfile>().await;
 
     if ja.is_err() {
-        return UsersRow {
-            timestamp: SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap()
-                .as_secs() as i64,
-            membershipId: id as i64,
-            membershipType: membership_type as i8,
-            bungieName: name,
-            lastPlayed: 0,
-            profileData: "".to_owned(),
-            collections: vec![],
-            emblems: vec![],
-        };
+        return default;
     }
 
     let req: GetProfile = ja.unwrap();
 
-    if req.Response.is_none()
-        || req
-            .Response
-            .as_ref()
-            .unwrap()
-            .profileCollectibles
-            .data
-            .is_none()
-    {
-        return UsersRow {
-            timestamp: SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap()
-                .as_secs() as i64,
-            membershipId: id as i64,
-            membershipType: membership_type as i8,
-            bungieName: name,
-            lastPlayed: 0,
-            profileData: "".to_owned(),
-            collections: vec![],
-            emblems: vec![],
-        };
+    if req.Response.is_none() {
+        return default;
     }
 
-    let collectibles = req
-        .Response
-        .unwrap()
-        .profileCollectibles
-        .data
-        .unwrap()
-        .collectibles;
+    let profile = req.Response.unwrap().profileCollectibles.data;
+
+    if profile.is_none() {
+        return default;
+    }
+
+    let collectibles = profile.unwrap().collectibles;
 
     let mut emblems: Vec<u32> = vec![];
 
