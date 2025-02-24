@@ -39,7 +39,7 @@ pub async fn push_data(data: Vec<UsersRow>) {
         .with_period(Some(Duration::from_secs(15)));
 
     for row in data {
-        if(row.emblems.len() == 0) {
+        if (row.emblems.len() == 0) {
             continue;
         }
 

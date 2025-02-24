@@ -1,15 +1,19 @@
 use std::time::SystemTime;
 
-use api::{get_collections, make_bungie_request};
+use api::get_collections;
 use db::push_data;
+use rabbit::get_connection;
 
 pub mod api;
 pub mod db;
+pub mod rabbit;
 pub mod utils;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv().ok();
+
+    get_connection().unwrap();
 
     let conc100 = SystemTime::now();
 
