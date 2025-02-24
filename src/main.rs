@@ -57,9 +57,16 @@ async fn process_message(message: String) {
 
     let deserialized: Vec<String> = serde_json::from_str(&message).unwrap();
 
-    let ids: Vec<u64> = deserialized.iter().map(|x| x.parse::<u64>().unwrap()).collect();
+    let ids: Vec<u64> = deserialized
+        .iter()
+        .map(|x| x.parse::<u64>().unwrap())
+        .collect();
 
-    println!("## Getting ids starting at {} going to {}", &ids[0], &ids[ids.len() - 1]);
+    println!(
+        "## Getting ids starting at {} going to {}",
+        &ids[0],
+        &ids[ids.len() - 1]
+    );
 
     let mut reqs = vec![];
 
@@ -68,29 +75,13 @@ async fn process_message(message: String) {
         reqs.push(req);
     }
 
-    println!("Making {} requests", reqs.len()*2);
+    println!("Making {} requests", reqs.len() * 2);
 
     // Proccess in 100 request chunks
 
-    for i in 0..reqs.len()/500+1 {
-        let start = SystemTime::now();
-        
-        let mut temp = vec![];
+    let c = trpl::join_all(reqs).await;
 
-        for j in 0..500 {
-            if reqs.len() > 0 {
-                temp.push(reqs.remove(0));
-            }
-        }
-
-        let c = trpl::join_all(temp).await;
-
-        push_data(c).await;
-
-        let end = SystemTime::now();
-
-        println!("## Completed a 500 chunk in {:?}", end.duration_since(start).unwrap());
-    }
+    push_data(c).await;
 
     let end = SystemTime::now();
 

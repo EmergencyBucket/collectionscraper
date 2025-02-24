@@ -1,5 +1,8 @@
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, time::{Duration, SystemTime}};
+use std::{
+    collections::HashMap,
+    time::{Duration, SystemTime},
+};
 
 use nestify::nest;
 use reqwest::{Response, Url};
@@ -106,7 +109,10 @@ pub async fn get_membership_details(membership_id: u64) -> (u8, String) {
         return (0, "".to_owned());
     }
 
-    (data.membershipType.unwrap(), data.displayName.as_ref().unwrap().to_string())
+    (
+        data.membershipType.unwrap(),
+        data.displayName.as_ref().unwrap().to_string(),
+    )
 }
 
 #[derive(PartialEq)]
