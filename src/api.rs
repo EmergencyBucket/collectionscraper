@@ -235,7 +235,25 @@ pub async fn get_collections(membership_id: u64) -> UsersRow {
         };
     }
 
-    let req: GetProfile = ra.unwrap().json::<GetProfile>().await.unwrap();
+    let ja = ra.unwrap().json::<GetProfile>().await;
+
+    if ja.is_err() {
+        return UsersRow {
+            timestamp: SystemTime::now()
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .unwrap()
+                .as_secs() as i64,
+            membershipId: id as i64,
+            membershipType: membership_type as i8,
+            bungieName: name,
+            lastPlayed: 0,
+            profileData: "".to_owned(),
+            collections: vec![],
+            emblems: vec![],
+        };
+    }
+
+    let req: GetProfile = ja.unwrap();
 
     if req.Response.is_none()
         || req
