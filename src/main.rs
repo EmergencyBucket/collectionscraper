@@ -32,7 +32,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Waiting for messages. Press Ctrl-C to exit.");
 
-    for (i, message) in consumer.receiver().iter().enumerate() {
+    let receiver = consumer.receiver();
+
+    loop {
+        let message = receiver.recv().unwrap();
         match message {
             ConsumerMessage::Delivery(delivery) => {
                 let body = String::from_utf8_lossy(&delivery.body);
