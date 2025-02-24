@@ -97,7 +97,7 @@ pub async fn get_membership_details(membership_id: u64) -> (u8, String) {
 
     let ja = res.unwrap().json::<GetLinkedProfiles>().await;
 
-    if (ja.is_err()) {
+    if ja.is_err() {
         return (0, "".to_owned());
     }
 

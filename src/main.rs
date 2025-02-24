@@ -63,7 +63,7 @@ async fn process_message(message: String) {
         .collect();
 
     println!(
-        "## Getting ids starting at {} going to {}",
+        "Getting ids starting at {} going to {}",
         &ids[0],
         &ids[ids.len() - 1]
     );
@@ -85,5 +85,5 @@ async fn process_message(message: String) {
 
     let end = SystemTime::now();
 
-    println!("## Finished in {:?}", end.duration_since(start).unwrap());
+    println!("Finished in {:?}", end.duration_since(start).unwrap());
 }
