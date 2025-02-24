@@ -70,10 +70,12 @@ pub async fn get_membership_details(membership_id: u64) -> (u8, String) {
         #[derive(Serialize, Deserialize)]*
         struct GetLinkedProfiles {
             Response: Option<struct BungieResponse {
-                profiles: Vec<struct Profile {
-                    membershipType: u8,
-                    displayName: String
+                profiles: Option<
+                Vec<struct Profile {
+                    membershipType: Option<u8>,
+                    displayName: Option<String>
                 }>
+                >
             }>
         }
     }
@@ -89,9 +91,19 @@ pub async fn get_membership_details(membership_id: u64) -> (u8, String) {
         return (0, "".to_owned());
     }
 
-    let data = &json.Response.unwrap().profiles[0];
+    let res = json.Response.unwrap();
 
-    (data.membershipType, data.displayName.to_owned())
+    if res.profiles.is_none() {
+        return (0, "".to_owned());
+    }
+
+    let data = &res.profiles.unwrap()[0];
+
+    if data.membershipType.is_none() || data.displayName.is_none() {
+        return (0, "".to_owned());
+    }
+
+    (data.membershipType.unwrap(), data.displayName.as_ref().unwrap().to_string())
 }
 
 #[derive(PartialEq)]

@@ -59,7 +59,7 @@ async fn process_message(message: String) {
 
     let ids: Vec<u64> = deserialized.iter().map(|x| x.parse::<u64>().unwrap()).collect();
 
-    println!("## Getting ids starting at {:?}", &ids[0]);
+    println!("## Getting ids starting at {} going to {}", &ids[0], &ids[ids.len() - 1]);
 
     let mut reqs = vec![];
 
