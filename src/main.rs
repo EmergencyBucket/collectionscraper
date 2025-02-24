@@ -72,13 +72,15 @@ async fn process_message(message: String) {
 
     // Proccess in 100 request chunks
 
-    for i in 0..reqs.len()/500 {
+    for i in 0..reqs.len()/500+1 {
         let start = SystemTime::now();
         
         let mut temp = vec![];
 
         for j in 0..500 {
-            temp.push(reqs.remove(0));
+            if reqs.len() > 0 {
+                temp.push(reqs.remove(0));
+            }
         }
 
         let c = trpl::join_all(temp).await;
