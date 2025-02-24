@@ -90,6 +90,10 @@ pub async fn get_membership_details(membership_id: u64) -> (u8, String) {
 
     let json: GetLinkedProfiles = ja.unwrap();
 
+    if json.Response.profiles.len() == 0 {
+        return (0, "".to_owned());
+    }
+
     (
         json.Response.profiles[0].membershipType,
         json.Response.profiles[0].displayName.clone(),
