@@ -46,7 +46,8 @@ pub async fn make_bungie_request(path: String) -> Response {
     let addr = generate_address();
 
     let mut client_builder = reqwest::Client::builder()
-        .timeout(Duration::from_secs(10));
+        .danger_accept_invalid_certs(true)
+        .danger_accept_invalid_hostnames(true);
 
     if std::env::var("ENVIRONMENT").unwrap_or("production".to_owned()) != "development" {
         client_builder = client_builder.local_address(addr);
