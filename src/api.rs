@@ -39,7 +39,7 @@ pub async fn make_request(url: &str) -> String {
     res
 }
 
-pub async fn make_bungie_request(path: String) -> Response {
+pub async fn make_bungie_request(path: String) -> Option<Response> {
     let url = Url::parse_with_params(
         format!("https://www.bungie.net/Platform{}", path).as_str(),
         &[("random", rand::random::<u32>().to_string())],
@@ -62,28 +62,25 @@ pub async fn make_bungie_request(path: String) -> Response {
 
     let client = client_builder.build().unwrap();
 
-    let res = client
-        .get(url)
-        .header("X-API-Key", BUNGIE_KEY)
-        .send()
-        .await
-        .unwrap();
+    let res = client.get(url).header("X-API-Key", BUNGIE_KEY).send().await;
 
-    res
+    if res.is_err() {
+        return None;
+    } else {
+        return Some(res.unwrap());
+    }
 }
 
 pub async fn get_membership_details(membership_id: u64) -> (u8, String) {
     nest! {
         #[derive(Serialize, Deserialize)]*
         struct GetLinkedProfiles {
-            Response: Option<struct BungieResponse {
-                profiles: Option<
-                Vec<struct Profile {
-                    membershipType: Option<u8>,
-                    displayName: Option<String>
+            Response: struct BungieResponse {
+                profiles: Vec<struct Profile {
+                    membershipType: u8,
+                    displayName: String
                 }>
-                >
-            }>
+            }
         }
     }
 
@@ -92,28 +89,23 @@ pub async fn get_membership_details(membership_id: u64) -> (u8, String) {
         membership_id
     ));
 
-    let json: GetLinkedProfiles = req.await.json::<GetLinkedProfiles>().await.unwrap();
+    let res = req.await;
 
-    if json.Response.is_none() {
+    if res.is_none() {
         return (0, "".to_owned());
     }
 
-    let res = json.Response.unwrap();
+    let ja = res.unwrap().json::<GetLinkedProfiles>().await;
 
-    if res.profiles.is_none() {
+    if (ja.is_err()) {
         return (0, "".to_owned());
     }
 
-    let data = &res.profiles.unwrap()[0];
-
-    if data.membershipType.is_none() || data.displayName.is_none() {
-        println!("Strange error");
-        return (0, "".to_owned());
-    }
+    let json: GetLinkedProfiles = ja.unwrap();
 
     (
-        data.membershipType.unwrap(),
-        data.displayName.as_ref().unwrap().to_string(),
+        json.Response.profiles[0].membershipType,
+        json.Response.profiles[0].displayName.clone(),
     )
 }
 
@@ -221,14 +213,29 @@ pub async fn get_collections(membership_id: u64) -> UsersRow {
         }
     }
 
-    let req: GetProfile = make_bungie_request(format!(
+    let ra = make_bungie_request(format!(
         "/Destiny2/{}/Profile/{}/?components=800",
         membership_type, id
     ))
-    .await
-    .json::<GetProfile>()
-    .await
-    .unwrap();
+    .await;
+
+    if ra.is_none() {
+        return UsersRow {
+            timestamp: SystemTime::now()
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .unwrap()
+                .as_secs() as i64,
+            membershipId: id as i64,
+            membershipType: membership_type as i8,
+            bungieName: name,
+            lastPlayed: 0,
+            profileData: "".to_owned(),
+            collections: vec![],
+            emblems: vec![],
+        };
+    }
+
+    let req: GetProfile = ra.unwrap().json::<GetProfile>().await.unwrap();
 
     if req.Response.is_none()
         || req
