@@ -163,10 +163,7 @@ fn decode_state(state: u8) -> Vec<CollectibleState> {
 
 pub async fn get_collections(membership_id: u64) -> UsersRow {
     let default = UsersRow {
-        timestamp: SystemTime::now()
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .unwrap()
-            .as_secs() as i64,
+        timestamp: 0,
         membershipId: 0,
         membershipType: 0,
         bungieName: "".to_string(),
@@ -194,15 +191,15 @@ pub async fn get_collections(membership_id: u64) -> UsersRow {
     nest! {
         #[derive(Serialize, Deserialize)]*
         struct GetProfile {
-            Response: Option<struct Profile {
+            Response: struct Profile {
                 profileCollectibles: struct Collectibles {
-                    data: Option<struct CollectibleData {
+                    data: struct CollectibleData {
                         collectibles: HashMap<u32, struct Collectible {
                             state: u8
                         }>
-                    }>
+                    }
                 }
-            }>
+            }
         }
     }
 
@@ -224,17 +221,7 @@ pub async fn get_collections(membership_id: u64) -> UsersRow {
 
     let req: GetProfile = ja.unwrap();
 
-    if req.Response.is_none() {
-        return default;
-    }
-
-    let profile = req.Response.unwrap().profileCollectibles.data;
-
-    if profile.is_none() {
-        return default;
-    }
-
-    let collectibles = profile.unwrap().collectibles;
+    let collectibles = req.Response.profileCollectibles.data.collectibles;
 
     let mut emblems: Vec<u32> = vec![];
 
