@@ -1,8 +1,10 @@
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
+use std::{collections::HashMap, time::SystemTime};
 
-use reqwest::{Response, Url};
 use nestify::nest;
+use reqwest::{Response, Url};
+
+use crate::db::UsersRow;
 
 /// No changes can be made with this API key so it can be public
 const BUNGIE_KEY: &'static str = "529cac5f9e3a482b86b931f1f75f2331";
@@ -51,9 +53,7 @@ pub async fn make_bungie_request(path: String) -> Response {
         client_builder = client_builder.local_address(addr);
     }
 
-    let client = client_builder
-        .build()
-        .unwrap();
+    let client = client_builder.build().unwrap();
 
     let res = client
         .get(url)
@@ -65,29 +65,33 @@ pub async fn make_bungie_request(path: String) -> Response {
     res
 }
 
-
-
-pub async fn get_membership_type(membership_id: u64) -> u8 {
+pub async fn get_membership_details(membership_id: u64) -> (u8, String) {
     nest! {
         #[derive(Serialize, Deserialize)]*
         struct GetLinkedProfiles {
             Response: Option<struct BungieResponse {
                 profiles: Vec<struct Profile {
-                    membershipType: u8
+                    membershipType: u8,
+                    displayName: String
                 }>
             }>
         }
     }
 
-    let req = make_bungie_request(format!("/Destiny2/-1/Profile/{}/LinkedProfiles/", membership_id));
+    let req = make_bungie_request(format!(
+        "/Destiny2/-1/Profile/{}/LinkedProfiles/",
+        membership_id
+    ));
 
     let json: GetLinkedProfiles = req.await.json::<GetLinkedProfiles>().await.unwrap();
 
     if json.Response.is_none() {
-        return 0;
+        return (0, "".to_owned());
     }
 
-    json.Response.unwrap().profiles[0].membershipType
+    let data = &json.Response.unwrap().profiles[0];
+
+    (data.membershipType, data.displayName.to_owned())
 }
 
 #[derive(PartialEq)]
@@ -151,16 +155,32 @@ fn decode_state(state: u8) -> Vec<CollectibleState> {
     return states;
 }
 
-pub async fn get_collections(membership_id: u64) -> Vec<u32> {
+pub async fn get_collections(membership_id: u64) -> UsersRow {
     let offset: u64 = 4611686018000000000;
 
     let id = membership_id + offset;
 
     // First we need to get the membershipType
-    let membership_type = get_membership_type(id).await;
+    let membership_details = get_membership_details(id).await;
+
+    let membership_type = membership_details.0;
+
+    let name = membership_details.1;
 
     if membership_type == 0 {
-        return vec![];
+        return UsersRow {
+            timestamp: SystemTime::now()
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .unwrap()
+                .as_secs() as i64,
+            membershipId: id as i64,
+            membershipType: membership_type as i8,
+            bungieName: name,
+            lastPlayed: 0,
+            profileData: "".to_owned(),
+            collections: vec![],
+            emblems: vec![],
+        };
     }
 
     nest! {
@@ -181,15 +201,45 @@ pub async fn get_collections(membership_id: u64) -> Vec<u32> {
     let req: GetProfile = make_bungie_request(format!(
         "/Destiny2/{}/Profile/{}/?components=800",
         membership_type, id
-    )).await.json::<GetProfile>().await.unwrap();
+    ))
+    .await
+    .json::<GetProfile>()
+    .await
+    .unwrap();
 
-    if req.Response.is_none() || req.Response.as_ref().unwrap().profileCollectibles.data.is_none() {
-        return vec![];
+    if req.Response.is_none()
+        || req
+            .Response
+            .as_ref()
+            .unwrap()
+            .profileCollectibles
+            .data
+            .is_none()
+    {
+        return UsersRow {
+            timestamp: SystemTime::now()
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .unwrap()
+                .as_secs() as i64,
+            membershipId: id as i64,
+            membershipType: membership_type as i8,
+            bungieName: name,
+            lastPlayed: 0,
+            profileData: "".to_owned(),
+            collections: vec![],
+            emblems: vec![],
+        };
     }
 
-    let collectibles = req.Response.unwrap().profileCollectibles.data.unwrap().collectibles;
+    let collectibles = req
+        .Response
+        .unwrap()
+        .profileCollectibles
+        .data
+        .unwrap()
+        .collectibles;
 
-    let mut emblems: Vec<u32>  = vec![];
+    let mut emblems: Vec<u32> = vec![];
 
     for (key, value) in collectibles {
         let states = decode_state(value.state);
@@ -199,5 +249,17 @@ pub async fn get_collections(membership_id: u64) -> Vec<u32> {
         }
     }
 
-    return emblems;
+    UsersRow {
+        timestamp: SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as i64,
+        membershipId: id as i64,
+        membershipType: membership_type as i8,
+        bungieName: name,
+        lastPlayed: 0,
+        profileData: "".to_owned(),
+        collections: vec![],
+        emblems: emblems,
+    }
 }
