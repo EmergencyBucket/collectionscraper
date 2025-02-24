@@ -84,7 +84,7 @@ async fn process_message(message: String) {
 
     let c = trpl::join_all(reqs).await;
 
-    //push_data(c).await;
+    push_data(c).await;
 
     let end = SystemTime::now();
 
