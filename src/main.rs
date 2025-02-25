@@ -53,9 +53,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut lv: Vec<u64> = vec![];
 
+    let mut count = 0;
+
     while let Some(delivery) = consumer.next().await {
         let delivery = delivery.expect("error in consumer");
         delivery.ack(BasicAckOptions::default()).await.expect("ack");
+
+        println!("Received message #{}", count);
+        count += 1;
 
         let body = String::from_utf8_lossy(&delivery.data);
 
