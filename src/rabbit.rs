@@ -1,9 +1,12 @@
-use amiquip::Connection;
+use lapin::{Connection, ConnectionProperties};
 
 use crate::utils::read_env_var;
 
-pub fn get_connection() -> Connection {
-    let connection = Connection::insecure_open(&read_env_var("RABBIT_URL")).unwrap();
+pub async fn get_connection() -> Connection {
+    let connection =
+        Connection::connect(&read_env_var("RABBIT_URL"), ConnectionProperties::default())
+            .await
+            .unwrap();
 
     return connection;
 }

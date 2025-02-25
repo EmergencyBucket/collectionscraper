@@ -1,8 +1,12 @@
 use std::{time::SystemTime, vec};
 
-use amiquip::{AmqpValue, ConsumerMessage, ConsumerOptions, FieldTable, QueueDeclareOptions};
 use api::get_collections;
 use db::push_data;
+use futures::stream::StreamExt;
+use lapin::{
+    options::{BasicAckOptions, BasicConsumeOptions, QueueDeclareOptions},
+    types::FieldTable,
+};
 use rabbit::get_connection;
 
 pub mod api;
@@ -14,54 +18,58 @@ pub mod utils;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv().ok();
 
-    let mut connection = get_connection();
+    let mut connection = get_connection().await;
 
-    let channel = connection.open_channel(None).unwrap();
+    let channel = connection.create_channel().await.unwrap();
 
-    let mut arguments = FieldTable::new();
-    arguments.insert("x-max-priority".to_owned(), AmqpValue::ShortInt(5));
+    let mut arguments = FieldTable::default();
+    arguments.insert(
+        "x-max-priority".to_owned().into(),
+        lapin::types::AMQPValue::ShortInt(5),
+    );
     let options = QueueDeclareOptions {
-        arguments,
         durable: true,
         ..QueueDeclareOptions::default()
     };
 
-    let queue = channel.queue_declare("task_queue", options).unwrap();
+    let queue = channel
+        .queue_declare("task_queue", options, arguments)
+        .await
+        .unwrap();
 
-    let consumer = queue.consume(ConsumerOptions::default()).unwrap();
+    println!("Declared queue");
+
+    let mut consumer = channel
+        .basic_consume(
+            "task_queue",
+            "my_consumer",
+            BasicConsumeOptions::default(),
+            FieldTable::default(),
+        )
+        .await
+        .unwrap();
 
     println!("Waiting for messages. Press Ctrl-C to exit.");
 
-    let receiver = consumer.receiver();
-
     let mut lv: Vec<u64> = vec![];
 
-    loop {
-        let message = receiver.recv().unwrap();
-        match message {
-            ConsumerMessage::Delivery(delivery) => {
-                let body = String::from_utf8_lossy(&delivery.body);
+    while let Some(delivery) = consumer.next().await {
+        let delivery = delivery.expect("error in consumer");
+        delivery.ack(BasicAckOptions::default()).await.expect("ack");
 
-                let mut tem: Vec<u64> = serde_json::from_str(&body).unwrap();
+        let body = String::from_utf8_lossy(&delivery.data);
 
-                lv.append(&mut tem);
+        let mut tem: Vec<u64> = serde_json::from_str(&body).unwrap();
 
-                if lv.len() >= 1000 {
-                    process_message(lv).await;
-                    lv = vec![];
-                }
+        lv.append(&mut tem);
 
-                //println!("(Received [{}]", body);
-                consumer.ack(delivery).unwrap();
-            }
-            other => {
-                println!("Consumer ended: {:?}", other);
-                break;
-            }
+        if lv.len() >= 1000 {
+            process_message(lv).await;
+            lv = vec![];
         }
     }
 
-    connection.close().unwrap();
+    let mut lv: Vec<u64> = vec![];
 
     Ok(())
 }

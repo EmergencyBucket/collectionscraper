@@ -4,12 +4,12 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-amiquip = "0.4.2"
 async-std = "1.13.0"
 clickhouse = { version = "0.13.1", features = ["inserter"] }
 dotenv = "0.15.0"
 futures = "0.3.31"
 gjson = "0.8.1"
+lapin = "2.5.0"
 lazy_static = "1.5.0"
 nestify = "0.3.3"
 rand = "0.9.0"
