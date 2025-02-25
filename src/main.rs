@@ -4,7 +4,7 @@ use api::get_collections;
 use db::push_data;
 use futures::stream::StreamExt;
 use lapin::{
-    options::{BasicAckOptions, BasicConsumeOptions, QueueDeclareOptions},
+    options::{BasicAckOptions, BasicConsumeOptions, BasicQosOptions, QueueDeclareOptions},
     types::FieldTable,
 };
 use rabbit::get_connection;
@@ -21,6 +21,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut connection = get_connection().await;
 
     let channel = connection.create_channel().await.unwrap();
+
+    channel.basic_qos(1, BasicQosOptions::default()).await.unwrap();
 
     let mut arguments = FieldTable::default();
     arguments.insert(
