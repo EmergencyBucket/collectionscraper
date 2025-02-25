@@ -39,11 +39,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Declared queue");
 
+    let mut consumer_options = BasicConsumeOptions::default();
+
+    consumer_options.no_local = true;
+
     let mut consumer = channel
         .basic_consume(
             "task_queue",
             "my_consumer",
-            BasicConsumeOptions::default(),
+            consumer_options,
             FieldTable::default(),
         )
         .await
