@@ -22,6 +22,19 @@ lazy_static! {
         .use_rustls_tls()
         .build()
         .unwrap();
+    pub static ref NETWORK_CLIENTS: Vec<Client> = (0..1000)
+        .map(|_| {
+            reqwest::Client::builder()
+                .danger_accept_invalid_certs(true)
+                .danger_accept_invalid_hostnames(true)
+                .pool_idle_timeout(Duration::from_secs(5))
+                .http3_prior_knowledge()
+                .local_address(generate_address())
+                .use_rustls_tls()
+                .build()
+                .unwrap()
+        })
+        .collect();
 }
 
 /// Generates a random ipv6 address in the subnet  
@@ -39,35 +52,16 @@ fn generate_address() -> std::net::IpAddr {
     ])
 }
 
-pub async fn make_bungie_request(path: String) -> Option<Response> {
+pub async fn make_bungie_request(path: String, i: u32) -> Option<Response> {
     let url = Url::parse_with_params(
         format!("https://www.bungie.net/Platform{}", path).as_str(),
         &[("random", rand::random::<u32>().to_string())],
     )
     .unwrap();
 
-    /*
-    let addr = generate_address();
+    let client = NETWORK_CLIENTS.get(i as usize % 1000);
 
-    let mut client_builder = reqwest::Client::builder()
-        .danger_accept_invalid_certs(true)
-        .danger_accept_invalid_hostnames(true)
-        .pool_idle_timeout(Duration::from_secs(5))
-        .http3_prior_knowledge()
-        .use_rustls_tls();
-
-    if std::env::var("ENVIRONMENT").unwrap_or("production".to_owned()) != "development" {
-        client_builder = client_builder.local_address(addr);
-    }
-
-    let client = client_builder.build().unwrap();
-    */
-
-    let res = NETWORK_CLIENT
-        .get(url)
-        .header("X-API-Key", BUNGIE_KEY)
-        .send()
-        .await;
+    let res = client.get(url).header("X-API-Key", BUNGIE_KEY).send().await;
 
     if res.is_err() {
         return None;
@@ -76,7 +70,7 @@ pub async fn make_bungie_request(path: String) -> Option<Response> {
     }
 }
 
-pub async fn get_membership_details(membership_id: u64) -> (u8, String) {
+pub async fn get_membership_details(membership_id: u64, i: u32) -> (u8, String) {
     nest! {
         #[derive(Serialize, Deserialize)]*
         struct GetLinkedProfiles {
@@ -89,10 +83,10 @@ pub async fn get_membership_details(membership_id: u64) -> (u8, String) {
         }
     }
 
-    let req = make_bungie_request(format!(
-        "/Destiny2/-1/Profile/{}/LinkedProfiles/",
-        membership_id
-    ));
+    let req = make_bungie_request(
+        format!("/Destiny2/-1/Profile/{}/LinkedProfiles/", membership_id),
+        i,
+    );
 
     let res = req.await;
 
@@ -179,7 +173,7 @@ fn decode_state(state: u8) -> Vec<CollectibleState> {
     return states;
 }
 
-pub async fn get_collections(membership_id: u64) -> UsersRow {
+pub async fn get_collections(membership_id: u64, i: u32) -> UsersRow {
     let default = UsersRow {
         timestamp: 0,
         membershipId: 0,
@@ -196,7 +190,7 @@ pub async fn get_collections(membership_id: u64) -> UsersRow {
     let id = membership_id + offset;
 
     // First we need to get the membershipType
-    let membership_details = get_membership_details(id).await;
+    let membership_details = get_membership_details(id, i).await;
 
     let membership_type = membership_details.0;
 
@@ -221,10 +215,13 @@ pub async fn get_collections(membership_id: u64) -> UsersRow {
         }
     }
 
-    let ra = make_bungie_request(format!(
-        "/Destiny2/{}/Profile/{}/?components=800",
-        membership_type, id
-    ))
+    let ra = make_bungie_request(
+        format!(
+            "/Destiny2/{}/Profile/{}/?components=800",
+            membership_type, id
+        ),
+        i,
+    )
     .await;
 
     if ra.is_none() {
