@@ -35,7 +35,11 @@ pub async fn push_data(data: Vec<UsersRow>) {
         .with_timeouts(Some(Duration::from_secs(5)), Some(Duration::from_secs(20)))
         .with_max_bytes(50_000_000)
         .with_max_rows(750_000)
-        .with_period(Some(Duration::from_secs(15)));
+        .with_period(Some(Duration::from_secs(15)))
+        .with_timeouts(
+            Some(Duration::from_secs(1_000_000)),
+            Some(Duration::from_secs(1_000_000)),
+        );
 
     for row in data {
         if row.emblems.len() == 0 {

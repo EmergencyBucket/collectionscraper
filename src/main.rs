@@ -22,7 +22,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let channel = connection.create_channel().await.unwrap();
 
-    channel.basic_qos(1, BasicQosOptions::default()).await.unwrap();
+    channel
+        .basic_qos(1, BasicQosOptions::default())
+        .await
+        .unwrap();
 
     let mut arguments = FieldTable::default();
     arguments.insert(
