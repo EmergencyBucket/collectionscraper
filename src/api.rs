@@ -61,7 +61,12 @@ pub async fn make_bungie_request(path: String, i: u32) -> Option<Response> {
 
     let client = NETWORK_CLIENTS.get(i as usize % 1000);
 
-    let res = client.get(url).header("X-API-Key", BUNGIE_KEY).send().await;
+    let res = client
+        .unwrap()
+        .get(url)
+        .header("X-API-Key", BUNGIE_KEY)
+        .send()
+        .await;
 
     if res.is_err() {
         return None;

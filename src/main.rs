@@ -100,7 +100,7 @@ async fn process_message(ids: Vec<u64>) {
     let mut reqs = vec![];
 
     for (i, x) in ids.iter().enumerate() {
-        let req = get_collections(x, i);
+        let req = get_collections(x, i as u32);
         reqs.push(req);
     }
 
