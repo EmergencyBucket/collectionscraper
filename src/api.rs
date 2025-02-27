@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::HashMap, error::Error, time::{Duration, SystemTime}
+    collections::HashMap,
+    error::Error,
+    time::{Duration, SystemTime},
 };
 
 use lazy_static::lazy_static;

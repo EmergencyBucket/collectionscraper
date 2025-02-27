@@ -1,7 +1,7 @@
 use std::{time::SystemTime, vec};
 
 use api::get_collections;
-use db::push_data;
+use db::{get_users, get_users_count, push_data};
 use futures::stream::StreamExt;
 use lapin::{
     options::{BasicAckOptions, BasicConsumeOptions, BasicQosOptions, QueueDeclareOptions},
@@ -17,6 +17,8 @@ pub mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv().ok();
+
+    let user_count = get_users_count().await - 1000;
 
     let mut connection = get_connection().await;
 
@@ -64,22 +66,35 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut count = 0;
 
-    while let Some(delivery) = consumer.next().await {
-        let delivery = delivery.expect("error in consumer");
-        delivery.ack(BasicAckOptions::default()).await.expect("ack");
+    loop {
+        if queue.message_count() > 10000 {
+            while let Some(delivery) = consumer.next().await {
+                let delivery = delivery.expect("error in consumer");
+                delivery.ack(BasicAckOptions::default()).await.expect("ack");
 
-        println!("Received message #{}", count);
-        count += 1;
+                println!("Received message #{}", count);
+                count += 1;
 
-        let body = String::from_utf8_lossy(&delivery.data);
+                let body = String::from_utf8_lossy(&delivery.data);
 
-        let mut tem: Vec<u64> = serde_json::from_str(&body).unwrap();
+                let mut tem: Vec<u64> = serde_json::from_str(&body).unwrap();
 
-        lv.append(&mut tem);
+                lv.append(&mut tem);
 
-        if lv.len() >= 1000 {
-            process_message(lv).await;
-            lv = vec![];
+                if lv.len() >= 1000 {
+                    process_message(lv).await;
+                    lv = vec![];
+                    break;
+                }
+            }
+
+            if queue.message_count() < 10000 {
+                println!("Using clickhouse data!");
+
+                let users = get_users(1000, rand::random_range(0..user_count)).await;
+
+                process_message(users.iter().map(|x| x - 4611686018000000000).collect()).await;
+            }
         }
     }
 

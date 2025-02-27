@@ -60,3 +60,28 @@ pub async fn push_data(data: Vec<UsersRow>) {
 
     inserter.end().await.unwrap();
 }
+
+pub async fn get_users(limit: u64, offset: u64) -> Vec<u64> {
+    let client = get_client();
+
+    let query = format!(
+        "SELECT user_id FROM old_emblem_data LIMIT {} OFFSET {}",
+        limit, offset
+    );
+
+    let mut result = client.query(&query).fetch_all().await.unwrap();
+
+    result
+}
+
+pub async fn get_users_count() -> u64 {
+    let client = get_client();
+
+    let query = "SELECT count() FROM old_emblem_data FINAL";
+
+    let mut result = client.query(&query).fetch_all().await.unwrap();
+
+    let count: u64 = result[0];
+
+    count
+}
