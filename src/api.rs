@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::HashMap,
-    time::{Duration, SystemTime},
+    collections::HashMap, error::Error, time::{Duration, SystemTime}
 };
 
 use lazy_static::lazy_static;
@@ -87,6 +86,7 @@ pub async fn make_bungie_request(path: String, i: u32) -> Option<Response> {
 
     if res.is_err() {
         println!("Error: {}", res.err().unwrap());
+        println!("Caused by: {}", res.err().unwrap().source().unwrap());
         return None;
     } else {
         return Some(res.unwrap());
