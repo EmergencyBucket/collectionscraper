@@ -86,8 +86,8 @@ pub async fn make_bungie_request(path: String, i: u32) -> Option<Response> {
 
     if res.is_err() {
         let err = res.err().unwrap();
-        println!("Error: {}", err);
-        println!("Caused by: {}", err.source().unwrap());
+        println!("Error: {:?}", err);
+        println!("Caused by: {:?}", err.source().unwrap());
         return None;
     } else {
         return Some(res.unwrap());
