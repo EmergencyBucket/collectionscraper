@@ -29,36 +29,19 @@ pub struct UsersRow {
 pub async fn push_data(data: Vec<UsersRow>) {
     let client = get_client();
 
-    let mut inserter = client
-        .inserter::<UsersRow>("users_v3")
-        .unwrap()
-        .with_timeouts(Some(Duration::from_secs(5)), Some(Duration::from_secs(20)))
-        .with_max_bytes(50_000_000)
-        .with_max_rows(750_000)
-        .with_period(Some(Duration::from_secs(15)))
-        .with_timeouts(
-            Some(Duration::from_secs(1_000_000)),
-            Some(Duration::from_secs(1_000_000)),
-        );
+    let mut insert = client
+        .insert::<UsersRow>("users_v3")
+        .unwrap().with_timeouts(Some(Duration::from_secs(1_000_000)), Some(Duration::from_secs(1_000_000)));
 
     for row in data {
         if row.emblems.len() == 0 {
             continue;
         }
 
-        inserter.write(&row).unwrap();
+        insert.write(&row).await.unwrap();
     }
 
-    let stats = inserter.commit().await.unwrap();
-
-    if stats.rows > 0 {
-        println!(
-            "{} bytes, {} rows, {} transactions have been inserted",
-            stats.bytes, stats.rows, stats.transactions,
-        );
-    }
-
-    inserter.end().await.unwrap();
+    insert.end().await.unwrap();
 }
 
 pub async fn get_users(limit: u64, offset: u64) -> Vec<u64> {
