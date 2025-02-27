@@ -52,6 +52,23 @@ fn generate_address() -> std::net::IpAddr {
     ])
 }
 
+/// Makes a request to the Bungie API
+/// ## Arguments
+/// * `path` - The path to the API endpoint
+/// * `i` - The index of the client to use
+/// ## Returns
+/// * `Option<Response>` - The response from the API
+/// ## Example
+/// ```
+/// let response = make_bungie_request("/Destiny2/2/Profile/4611686018000000000/?components=800".to_string(), 0).await;
+/// ```
+/// ## Errors
+/// * Returns `None` if the request fails
+/// * Returns `Some(Response)` if the request is successful
+/// ## Panics
+/// * Panics if the URL is invalid
+/// ## Safety
+/// * This function is safe to use
 pub async fn make_bungie_request(path: String, i: u32) -> Option<Response> {
     let url = Url::parse_with_params(
         format!("https://www.bungie.net/Platform{}", path).as_str(),
@@ -69,6 +86,7 @@ pub async fn make_bungie_request(path: String, i: u32) -> Option<Response> {
         .await;
 
     if res.is_err() {
+        println!("Error: {}", res.err().unwrap());
         return None;
     } else {
         return Some(res.unwrap());
