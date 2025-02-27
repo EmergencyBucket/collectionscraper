@@ -23,7 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let channel = connection.create_channel().await.unwrap();
 
     channel
-        .basic_qos(1, BasicQosOptions::default())
+        .basic_qos(1000, BasicQosOptions::default())
         .await
         .unwrap();
 
