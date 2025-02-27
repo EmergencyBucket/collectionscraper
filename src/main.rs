@@ -83,8 +83,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    let mut lv: Vec<u64> = vec![];
-
     Ok(())
 }
 
