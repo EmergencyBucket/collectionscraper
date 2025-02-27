@@ -87,14 +87,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     break;
                 }
             }
+        }
 
-            if queue.message_count() < 10000 {
-                println!("Using clickhouse data!");
+        if queue.message_count() < 10000 {
+            println!("Using clickhouse data!");
 
-                let users = get_users(1000, rand::random_range(0..user_count)).await;
+            let users = get_users(1000, rand::random_range(0..user_count)).await;
 
-                process_message(users.iter().map(|x| x - 4611686018000000000).collect()).await;
-            }
+            process_message(users.iter().map(|x| x - 4611686018000000000).collect()).await;
         }
     }
 
