@@ -125,7 +125,7 @@ pub async fn get_membership_details(membership_id: u64, i: u32) -> (u8, String) 
     if ja.is_err() {
         let err = ja.err().unwrap();
         println!("Error: {:?}", err);
-        println!("Caused by: {:?}", err.source().unwrap());
+        //println!("Caused by: {:?}", err.source());
         println!("Response: {:?}", te);
         return (0, "".to_owned());
     }
