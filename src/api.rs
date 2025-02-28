@@ -7,7 +7,7 @@ use std::{
 
 use lazy_static::lazy_static;
 use nestify::nest;
-use reqwest::{Client, Response, Url};
+use reqwest::{header::HeaderMap, Client, Response, Url};
 
 use crate::db::UsersRow;
 
@@ -30,6 +30,7 @@ lazy_static! {
                 .danger_accept_invalid_hostnames(true)
                 .pool_idle_timeout(Duration::from_secs(5))
                 .http3_prior_knowledge()
+                .gzip(true)
                 .local_address(generate_address())
                 .use_rustls_tls()
                 .build()
@@ -83,6 +84,7 @@ pub async fn make_bungie_request(path: String, i: u32) -> Option<Response> {
         .unwrap()
         .get(url)
         .header("X-API-Key", BUNGIE_KEY)
+        .header("Accept-Encoding", "gzip")
         .send()
         .await;
 

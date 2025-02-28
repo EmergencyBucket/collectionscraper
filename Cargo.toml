@@ -13,7 +13,7 @@ lapin = "2.5.0"
 lazy_static = "1.5.0"
 nestify = "0.3.3"
 rand = "0.9.0"
-reqwest = { version = "0.12.12", features = ["json", "http2", "http3", "rustls-tls"] }
+reqwest = { version = "0.12.12", features = ["json", "http2", "http3", "rustls-tls", "gzip"] }
 serde = { version = "1.0.218", features = ["derive"] }
 serde_json = "1.0.139"
 tokio = { version = "1", features = ["full"] }
