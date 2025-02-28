@@ -289,7 +289,7 @@ pub async fn get_collections(membership_id: u64, i: u32) -> UsersRow {
         bungieName: name,
         lastPlayed: 0,
         profileData: "".to_owned(),
-        collections: vec![],
-        emblems: emblems,
+        collections: emblems,
+        emblems: vec![],
     }
 }
