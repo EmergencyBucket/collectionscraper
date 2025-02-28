@@ -24,7 +24,7 @@ DESCRIBE TABLE users_v3
 │ bungieName     │ String        │              │                    │         │                  │                │
 │ lastPlayed     │ Int64         │              │                    │         │                  │                │
 │ profileData    │ String        │              │                    │         │                  │                │
-│ collections    │ Array(Int64)  │              │                    │         │                  │                │
+│ collections    │ Array(UInt32) │              │                    │         │                  │                │
 │ emblems        │ Array(UInt32) │              │                    │         │                  │                │
 └────────────────┴───────────────┴──────────────┴────────────────────┴─────────┴──────────────────┴────────────────┘
 ```

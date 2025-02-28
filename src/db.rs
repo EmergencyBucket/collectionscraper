@@ -24,7 +24,7 @@ pub struct UsersRow {
     pub bungieName: String,
     pub lastPlayed: i64,
     pub profileData: String,
-    pub collections: Vec<i64>,
+    pub collections: Vec<u32>,
     pub emblems: Vec<u32>,
 }
 
