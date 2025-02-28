@@ -204,7 +204,7 @@ fn decode_state(state: u8) -> Vec<CollectibleState> {
     return states;
 }
 
-pub async fn get_collections(membership_id: u64, i: u32) -> UsersRow {
+pub async fn get_collections(membership_id: u64, platform: Option<i8>, i: u32) -> UsersRow {
     let default = UsersRow {
         timestamp: 0,
         membershipId: 0,
@@ -220,8 +220,14 @@ pub async fn get_collections(membership_id: u64, i: u32) -> UsersRow {
 
     let id = membership_id + offset;
 
-    // First we need to get the membershipType
-    let membership_details = get_membership_details(id, i).await;
+    let membership_details: (u8, String);
+
+    if platform.is_some() {
+        membership_details = (platform.unwrap() as u8, "".to_owned());
+    }
+    else {
+        membership_details = get_membership_details(id, i).await;
+    }
 
     let membership_type = membership_details.0;
 

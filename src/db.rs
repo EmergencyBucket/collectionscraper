@@ -50,11 +50,11 @@ pub async fn push_data(data: Vec<UsersRow>) {
     insert.end().await.unwrap();
 }
 
-pub async fn get_users(limit: u64, offset: u64) -> Vec<u64> {
+pub async fn get_users(limit: u64, offset: u64) -> Vec<(i8,u64)> {
     let client = get_client();
 
     let query = format!(
-        "SELECT user_id FROM old_emblem_data LIMIT {} OFFSET {}",
+        "SELECT platform, user_id FROM old_emblem_data LIMIT {} OFFSET {}",
         limit, offset
     );
 

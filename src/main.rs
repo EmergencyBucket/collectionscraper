@@ -82,7 +82,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 lv.append(&mut tem);
 
                 if lv.len() >= 1000 {
-                    process_message(lv).await;
+                    process_message(lv.iter().map(|x| (None as Option<i8>, x.clone())).collect()).await;
                     lv = vec![];
                     break;
                 }
@@ -94,26 +94,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             let users = get_users(1000, rand::random_range(0..user_count)).await;
 
-            process_message(users.iter().map(|x| x - 4611686018000000000).collect()).await;
+            process_message(users.iter().map(|x| (Some(x.0), x.1 - 4611686018000000000)).collect()).await;
         }
     }
-
-    Ok(())
 }
 
-async fn process_message(ids: Vec<u64>) {
+async fn process_message(ids: Vec<(Option<i8>, u64)>) {
     let start = SystemTime::now();
 
     println!(
         "Getting ids starting at {} going to {}",
-        ids[0],
-        ids[ids.len() - 1]
+        ids[0].1,
+        ids[ids.len() - 1].1
     );
 
     let mut reqs = vec![];
 
     for (i, x) in ids.iter().enumerate() {
-        let req = get_collections(x.clone(), i as u32);
+        let req = get_collections(x.1.clone(), x.0, i as u32);
         reqs.push(req);
     }
 
