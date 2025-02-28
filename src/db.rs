@@ -40,7 +40,7 @@ pub async fn push_data(data: Vec<UsersRow>) {
         );
 
     for row in data {
-        if row.emblems.len() == 0 {
+        if row.collections.len() == 0 {
             continue;
         }
 
