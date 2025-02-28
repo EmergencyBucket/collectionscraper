@@ -7,7 +7,7 @@ use std::{
 
 use lazy_static::lazy_static;
 use nestify::nest;
-use reqwest::{header::HeaderMap, Client, Response, Url};
+use reqwest::{Client, Response, Url};
 
 use crate::db::UsersRow;
 

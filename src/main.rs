@@ -20,7 +20,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let user_count = get_users_count().await - 1000;
 
-    let mut connection = get_connection().await;
+    let connection = get_connection().await;
 
     let channel = connection.create_channel().await.unwrap();
 

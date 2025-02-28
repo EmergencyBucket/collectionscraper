@@ -52,7 +52,7 @@ pub async fn get_users(limit: u64, offset: u64) -> Vec<u64> {
         limit, offset
     );
 
-    let mut result = client.query(&query).fetch_all().await.unwrap();
+    let result = client.query(&query).fetch_all().await.unwrap();
 
     result
 }
@@ -62,7 +62,7 @@ pub async fn get_users_count() -> u64 {
 
     let query = "SELECT count() FROM old_emblem_data FINAL";
 
-    let mut result = client.query(&query).fetch_all().await.unwrap();
+    let result = client.query(&query).fetch_all().await.unwrap();
 
     let count: u64 = result[0];
 
