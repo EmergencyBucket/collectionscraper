@@ -73,7 +73,7 @@ fn generate_address() -> std::net::IpAddr {
 /// * This function is safe to use
 pub async fn make_bungie_request(path: String, i: u32) -> Option<Response> {
     let url = Url::parse_with_params(
-        format!("https://www.bungie.net/Platform{}", path).as_str(),
+        format!("https://proxy.fyrehost.net/?https://www.bungie.net/Platform{}", path).as_str(),
         &[("random", rand::random::<u32>().to_string())],
     )
     .unwrap();
