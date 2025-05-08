@@ -31,7 +31,7 @@ lazy_static! {
                 .pool_idle_timeout(Duration::from_secs(5))
                 .http3_prior_knowledge()
                 .gzip(true)
-                .local_address(generate_address())
+                // .local_address(generate_address())
                 .use_rustls_tls()
                 .build()
                 .unwrap()
