@@ -85,6 +85,7 @@ pub async fn make_bungie_request(path: String, i: u32) -> Option<Response> {
         .get(url)
         .header("X-API-Key", BUNGIE_KEY)
         .header("Accept-Encoding", "gzip")
+        .header("User-Agent", "EmergencyBucket/collectionscraper")
         .send()
         .await;
 
