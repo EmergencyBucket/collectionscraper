@@ -266,12 +266,6 @@ pub async fn get_collections(membership_id: u64, platform: Option<i8>, i: u32) -
         return default;
     }
 
-    // Print json
-
-    println!("Json: {}", ra.unwrap().text().await.unwrap());
-
-    return default;
-
     let ja = ra.unwrap().json::<GetProfile>().await;
 
     if ja.is_err() {
