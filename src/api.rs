@@ -12,7 +12,7 @@ use reqwest::{Client, Response, Url};
 use crate::db::UsersRow;
 
 /// No changes can be made with this API key so it can be public
-const BUNGIE_KEY: &'static str = "529cac5f9e3a482b86b931f1f75f2331";
+const BUNGIE_KEY: &'static str = std::env!("BUNGIE_API_KEY");
 
 lazy_static! {
     pub static ref NETWORK_CLIENT: Client = reqwest::Client::builder()
@@ -266,9 +266,16 @@ pub async fn get_collections(membership_id: u64, platform: Option<i8>, i: u32) -
         return default;
     }
 
+    // Print json
+
+    println!("Json: {}", ra.unwrap().text().await.unwrap());
+
+    return default;
+
     let ja = ra.unwrap().json::<GetProfile>().await;
 
     if ja.is_err() {
+        println!("Error: {:?}", ja.err());
         return default;
     }
 
