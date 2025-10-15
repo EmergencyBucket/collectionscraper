@@ -4,17 +4,17 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-async-std = "1.13.0"
-clickhouse = { version = "0.13.1", features = ["inserter"] }
+async-std = "1.13.2"
+clickhouse = { version = "0.14.0", features = ["inserter"] }
 dotenv = "0.15.0"
 futures = "0.3.31"
 gjson = "0.8.1"
-lapin = "2.5.0"
+lapin = "3.7.1"
 lazy_static = "1.5.0"
 nestify = "0.3.3"
-rand = "0.9.0"
-reqwest = { version = "0.12.12", features = ["json", "http2", "http3", "rustls-tls", "gzip"] }
-serde = { version = "1.0.218", features = ["derive"] }
-serde_json = "1.0.139"
+rand = "0.9.2"
+reqwest = { version = "0.12.24", features = ["json", "http2", "http3", "rustls-tls", "gzip"] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.145"
 tokio = { version = "1", features = ["full"] }
-trpl = "0.2.0"
+trpl = "0.3.0"
